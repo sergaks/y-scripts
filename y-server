@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+HYBRIS_DIR=`~/dev/branches/sergaks/hybris-decompiler/scripts/hybris-detect.sh`
+
+cd "$HYBRIS_DIR" && exec ./hybrisserver.sh "$@"

@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+CFR_URL=http://www.benf.org/other/cfr/cfr_0_122.jar
+DECOMPILED_SRC_DIR=decompiled
+
+# todo integrate with hybris detection
+if [ -z "$1"]
+  then
+  	echo "Path to hybris directory required"
+    echo "Usage: hybris-decompiler <path-to-hybris-directory>"
+    exit 1
+fi
+
+echo "Getting cfr decompliler"
+wget -nc $CFR_URL /tmp/	
+
+echo "Cleaning directory with decompiled source"
+rm -rf "$DECOMPILED_SRC_DIR"
+
+echo "Starting jar decompiling"
+find "$1" \( \
+			 \
+		-not -path "*tomcat*" \
+		-not -path "*atddrunner*" \
+	-or \
+		-name "*_bof.jar" \) \
+	-exec java -jar /tmp/cfr_0_122.jar "{}" --outputdir "$1/$DECOMPILED_SRC_DIR"/ \;
+
+echo "Finished, decompiled sources available in folder: $1/$DECOMPILED_SRC_DIR"

@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+HYBRIS_DIR=`y-whereis`
+
+if [ $? -eq 0 ]; then
+	cd "${HYBRIS_DIR}"
+	. ./setantenv.sh
+	ant "$@"
+else
+	echo "FAILURE"
+fi

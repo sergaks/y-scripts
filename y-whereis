@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+
+
+# unset a i
+# while IFS= read -r -d $'\0' file; do
+#     a[i++]="$file"        # or however you want to process each file
+# done < <(find /tmp -type f -print0)
+
+HYBRIS_PLATFORM_DIR="bin/platform"
+
+#todo add current dir
+pathes=()
+
+CURRENT_DIR=`pwd`
+if [[ $CURRENT_DIR == *"hybris"* ]]; then
+  pathes+=(`echo $CURRENT_DIR | sed -n 's/hybris.*$/hybris/p'`)
+fi
+
+while IFS=  read -r -d $'\0'; do
+    pathes+=("$REPLY")
+done < <(find . -type d -maxdepth 3 -name "hybris" -print0)
+
+# printf '%s\n' "${pathes[@]}"
+hybrisPathes=()
+for f in "${pathes[@]}"; do
+	if [ -d "$f/$HYBRIS_PLATFORM_DIR" ]; then
+		hybrisPathes+=("$f/$HYBRIS_PLATFORM_DIR")
+	fi
+done
+
+if [ ${#hybrisPathes[@]} -eq 0 ]; then
+    >&2 echo "hybris isn't detected anywhere nearby current folder, please go to hybris folder"
+    exit 1
+elif [ ${#hybrisPathes[@]} -eq 1 ]; then
+	echo "${hybrisPathes[0]}"
+	exit 0
+else
+	>&2 echo "multiple hybris projects found, please go to correct one and execute the command again"
+	>&2 printf '%s\n' "${hybrisPathes[@]}"
+	exit 1
+fi
