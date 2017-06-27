@@ -1,27 +1,29 @@
 #!/usr/bin/env bash
 
-
-
-# unset a i
-# while IFS= read -r -d $'\0' file; do
-#     a[i++]="$file"        # or however you want to process each file
-# done < <(find /tmp -type f -print0)
-
 HYBRIS_PLATFORM_DIR="bin/platform"
 
-#todo add current dir
-pathes=()
 
+function filterHybrisPathes()
+{
+    for f in "${pathes[@]}"; do
+		if [ -d "$f/$HYBRIS_PLATFORM_DIR" ]; then
+			hybrisPathes+=("$f/$HYBRIS_PLATFORM_DIR")
+		fi
+	done
+}
+
+# 1. Search hybris in current directory full path 
+pathes=()
 CURRENT_DIR=`pwd`
 if [[ $CURRENT_DIR == *"hybris"* ]]; then
   pathes+=(`echo $CURRENT_DIR | sed -n 's/hybris.*$/hybris/p'`)
 fi
 
+# 2. Search hybris in subdirectories of current folder
 while IFS=  read -r -d $'\0'; do
     pathes+=("$REPLY")
 done < <(find . -type d -maxdepth 3 -name "hybris" -print0)
 
-# printf '%s\n' "${pathes[@]}"
 hybrisPathes=()
 for f in "${pathes[@]}"; do
 	if [ -d "$f/$HYBRIS_PLATFORM_DIR" ]; then
@@ -29,6 +31,26 @@ for f in "${pathes[@]}"; do
 	fi
 done
 
+# 3. Filter found candidates by checking platform directory existance
+hybrisPathes=()
+filterHybrisPathes
+
+# 4. If don't found search hybris in nearby folders
+if [ ${#hybrisPathes[@]} -eq 0 ]; then
+	PARENT=".."
+	for (( i = 0; i < 5; i++ )); do
+		while IFS=  read -r -d $'\0'; do
+		pathes+=("$REPLY")
+		done < <(find $PARENT -type d -maxdepth 3 -name "hybris" -print0)
+		PARENT+="/.."
+		filterHybrisPathes
+		if [ ${#hybrisPathes[@]} -ne 0 ]; then
+			break
+		fi
+	done
+fi
+
+# 5. Returing results
 if [ ${#hybrisPathes[@]} -eq 0 ]; then
     >&2 echo "hybris isn't detected anywhere nearby current folder, please go to hybris folder"
     exit 1

@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+y-ant build -Dbuild.development.mode=false
+

@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+HYBRIS_DIR=`y-whereis`
+
+if [ $? -ne 0 ]; then
+	echo "FAILURE"
+	exit 1
+fi
+
+INSTALLER_DIR="$HYBRIS_DIR/../../../installer/"
+
+if [ ! -d "$INSTALLER_DIR" ]; then
+	echo "Installer directory doesn't exist, please check your hybris installation"
+	exit 1
+fi
+
+"$INSTALLER_DIR"/install.sh "$@"
