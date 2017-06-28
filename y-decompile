@@ -1,29 +1,30 @@
 #!/usr/bin/env bash
 
-CFR_URL=http://www.benf.org/other/cfr/cfr_0_122.jar
-DECOMPILED_SRC_DIR=decompiled
+CFR_JAR=cfr_0_122.jar
+CFR_URL="http://www.benf.org/other/cfr/$CFR_JAR"
+TMP_DIR="/tmp"
+HYBRIS_DIR=`y-whereis`
 
-# todo integrate with hybris detection
-if [ -z "$1"]
-  then
-  	echo "Path to hybris directory required"
-    echo "Usage: hybris-decompiler <path-to-hybris-directory>"
-    exit 1
+if [ $? -ne 0 ]; then
+	echo "FAILURE"
+	exit 1
 fi
 
+DECOMPILED_SRC_DIR="$HYBRIS_DIR/../../data/decompiled_src"
+
 echo "Getting cfr decompliler"
-wget -nc $CFR_URL /tmp/	
+wget -nc -O "$TMP_DIR/$CFR_JAR" $CFR_URL 
 
 echo "Cleaning directory with decompiled source"
 rm -rf "$DECOMPILED_SRC_DIR"
 
 echo "Starting jar decompiling"
-find "$1" \( \
-			 \
+find "$HYBRIS_DIR/../.." \( \
+		-regex ".*bin/[^/]*.jar" \
 		-not -path "*tomcat*" \
 		-not -path "*atddrunner*" \
 	-or \
 		-name "*_bof.jar" \) \
-	-exec java -jar /tmp/cfr_0_122.jar "{}" --outputdir "$1/$DECOMPILED_SRC_DIR"/ \;
+	-exec java -jar $TMP_DIR/$CFR_JAR "{}" --outputdir "$DECOMPILED_SRC_DIR"/ \;
 
-echo "Finished, decompiled sources available in folder: $1/$DECOMPILED_SRC_DIR"
+echo "Finished, decompiled sources available in folder: $DECOMPILED_SRC_DIR"
