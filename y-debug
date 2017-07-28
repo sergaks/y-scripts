@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+# Alias for hybris server start in debug mode
+#
+# source: https://github.com/sergaks/y-scripts
+
+y-server debug

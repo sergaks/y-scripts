@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# Decompiles hybris jar files using CFR decompiler
+#
+# source: https://github.com/sergaks/y-scripts
+
 CFR_JAR=cfr_0_122.jar
 CFR_URL="http://www.benf.org/other/cfr/$CFR_JAR"
 TMP_DIR="/tmp"

@@ -1,3 +1,7 @@
 #!/usr/bin/env bash
 
+# Alias for ant all and hybrisserver start in debug mode
+#
+# source: https://github.com/sergaks/y-scripts
+
 y-ant all && y-server debug

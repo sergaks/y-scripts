@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+
+# Wrapper for hybris ant with setantenv.sh 
+#
+# source: https://github.com/sergaks/y-scripts
+
 HYBRIS_DIR=`y-whereis`
 
 if [ $? -ne 0 ]; then

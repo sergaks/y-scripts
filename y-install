@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# Alias for hybris installer
+#
+# source: https://github.com/sergaks/y-scripts
+
 HYBRIS_DIR=`y-whereis`
 
 if [ $? -ne 0 ]; then

@@ -1,8 +1,12 @@
 #!/usr/bin/env bash
 
+# Performs hybris initialize and analyses errors
+#
+# source: https://github.com/sergaks/y-scripts
+
 CONSOLE_OUTPUT_FILE="/tmp/hybris-init.log"
 
-# y-ant all initialize "$@" | tee "$CONSOLE_OUTPUT_FILE"
+y-ant all initialize "$@" | tee "$CONSOLE_OUTPUT_FILE"
 
 FAILURES=`cat "$CONSOLE_OUTPUT_FILE" | sed -n "/Initialize system/,/FINISHED/p" | grep -e "WARN\|ERROR"`
 

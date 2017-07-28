@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# Performs hybris update and analyses errors
+#
+# source: https://github.com/sergaks/y-scripts
+
 CONSOLE_OUTPUT_FILE="/tmp/hybris-update.log"
 
 y-ant all updatesystem "$@" | tee "$CONSOLE_OUTPUT_FILE"

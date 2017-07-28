@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# Alias for hybrisserver.sh in hybris platform
+#
+# source: https://github.com/sergaks/y-scripts
+
 HYBRIS_DIR=`y-whereis`
 
 if [ $? -ne 0 ]; then

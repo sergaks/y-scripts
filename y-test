@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# Runs all hybris tests for custom extensions, parameter for filtering custom extension list can be supplied
+#
+# source: https://github.com/sergaks/y-scripts
+
 HYBRIS_DIR=`y-whereis`
 
 if [ $? -ne 0 ]; then
@@ -10,7 +14,7 @@ fi
 CUSTOM_DIR="$HYBRIS_DIR/../custom"
 
 if [ ! -d "$CUSTOM_DIR" ]; then
-	echo "No directory with custom hybris extensions exists, if you want run all hybris platform test run 'y-ant alltests' "
+	>&2 echo "No directory with custom hybris extensions exists, if you want run all hybris platform test run 'y-ant alltests' "
 	exit 1
 fi
 
