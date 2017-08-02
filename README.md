@@ -1,9 +1,13 @@
 # y-scripts
 
-hybris developer's bash scripts
+Collection of hybris developer's bash scripts that:
+ - simplify work process with multiple hybris project
+ - allow using system wide commands and aliases  
+ - enhance operations of initialization/update with error verifications
+ - decompile all hybris jars
 
 ## Installation
-- Clone this repository or download content
+- Clone or download this repository
 - Add path to the folder to your system PATH (add line to ~/bash_profile)
 
 ```bash
@@ -11,7 +15,7 @@ export PATH="$PATH:~/y-scripts"
 ```
 
 ## Usage
-- Open shell and navigate to hybris folder. It isn't required to open hybris/bin/platform dir and setantenv. Just open your repository root or project folder.
+- Open shell and navigate to a hybris folder - usually it's project/repository root. It isn't required to open hybris/bin/platform dir and setantenv.
 - Scripts can identify where is nearest hybris platform based on current working directory
 - If there is ambiguity in hybris platform selection scripts fail and returns non-zero code
 
