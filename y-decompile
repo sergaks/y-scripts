@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-# Decompiles hybris jar files using CFR decompiler
+# Decompiles hybris jar files using CFR or PROCYON decompiler
+# Decompiler can be specified by argument like - "y-decompile -d cfr" or "y-decompile -d procyon"
+# Procyon decompiler is used by default
 #
 # source: https://github.com/sergaks/y-scripts
 
@@ -13,23 +15,47 @@ PROCYON_URL="https://bitbucket.org/mstrobel/procyon/downloads/$PROCYON_JAR"
 TMP_DIR="/tmp"
 HYBRIS_DIR=`y-whereis`
 
-function decompileClass {
-   local PROCYON_JAR="procyon-decompiler-0.5.30.jar"
-   local TMP_DIR="/tmp"
-   local jarPath=$1
-   local jarName=$(basename $jarPath)
-   local jarBaseName="${jarName%.*}"
-   local jarDirPath=$(dirname $jarPath)/$jarBaseName
-   java -jar $TMP_DIR/$PROCYON_JAR $classPath -ln -jar $jarPath -o $jarDirPath;
-   return 0 
-}
+SELECTED_DECOMPILER="procyon"
 
-export -f decompileClass
+function decompileJar {
+	TMP_DIR="/tmp"
+	CFR_JAR=cfr_0_122.jar
+	PROCYON_JAR="procyon-decompiler-0.5.30.jar"
+	local jarPath=$1
+	local decompiler=$2
+	local jarName=$(basename $jarPath)
+   	local jarBaseName="${jarName%.*}"
+   	local jarDirPath=$(dirname $jarPath)/$jarBaseName
+	if [ $decompiler = "cfr" ]; then
+	   java -jar $TMP_DIR/$CFR_JAR $jarPath --outputdir $jarDirPath;
+	else
+	   java -jar $TMP_DIR/$PROCYON_JAR -ln -jar $jarPath -o $jarDirPath;
+	fi
+	return 0
+}
+export -f decompileJar
 
 if [ $? -ne 0 ]; then
 	echo "FAILURE"
 	exit 1
 fi
+
+checkargs () {
+	if ! [[ $OPTARG =~ ^(procyon|cfr)$ ]]
+	then
+		echo "Unknow argument $OPTARG for option $opt. Please specify decompiler 'cfr' or 'procyon'"
+		exit 1
+	fi
+}
+
+# Parse command line argument - d (decompiler)
+while getopts "d:" opt
+do
+case $opt in
+d) checkargs
+SELECTED_DECOMPILER=$OPTARG;;
+esac
+done
 
 RELATIVE_DECOMPILED_SRC_DIR="$HYBRIS_DIR/../../data/decompiled_src"
 DECOMPILED_SRC_DIR=$(cd $(dirname $RELATIVE_DECOMPILED_SRC_DIR); pwd)/decompiled_src
@@ -51,11 +77,11 @@ rsync -zarvm --exclude="custom/**" \
 				"$HYBRIS_DIR/.." \
 				"$DECOMPILED_SRC_DIR";
 
-echo "Starting class files decompiling"
-find $DECOMPILED_SRC_DIR -name "*.jar" -exec bash -c 'decompileClass "$1"' _ {} \;
+echo "Starting class files decompiling by $SELECTED_DECOMPILER"
+find $DECOMPILED_SRC_DIR -name "*.jar" -exec bash -c 'decompileJar "$1" "$2"' _ {} $SELECTED_DECOMPILER \;
+
 
 echo "Starting cleaning up"
 find $DECOMPILED_SRC_DIR -name '*.jar' -exec rm "{}" \;
 
 echo "Finished, decompiled sources available in folder: $DECOMPILED_SRC_DIR"
-
