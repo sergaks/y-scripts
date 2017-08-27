@@ -6,29 +6,56 @@
 
 CFR_JAR=cfr_0_122.jar
 CFR_URL="http://www.benf.org/other/cfr/$CFR_JAR"
+
+PROCYON_JAR="procyon-decompiler-0.5.30.jar"
+PROCYON_URL="https://bitbucket.org/mstrobel/procyon/downloads/$PROCYON_JAR"
+
 TMP_DIR="/tmp"
 HYBRIS_DIR=`y-whereis`
+
+function decompileClass {
+   local PROCYON_JAR="procyon-decompiler-0.5.30.jar"
+   local TMP_DIR="/tmp"
+   local jarPath=$1
+   local jarName=$(basename $jarPath)
+   local jarBaseName="${jarName%.*}"
+   local jarDirPath=$(dirname $jarPath)/$jarBaseName
+   java -jar $TMP_DIR/$PROCYON_JAR $classPath -ln -jar $jarPath -o $jarDirPath;
+   return 0 
+}
+
+export -f decompileClass
 
 if [ $? -ne 0 ]; then
 	echo "FAILURE"
 	exit 1
 fi
 
-DECOMPILED_SRC_DIR="$HYBRIS_DIR/../../data/decompiled_src"
+RELATIVE_DECOMPILED_SRC_DIR="$HYBRIS_DIR/../../data/decompiled_src"
+DECOMPILED_SRC_DIR=$(cd $(dirname $RELATIVE_DECOMPILED_SRC_DIR); pwd)/decompiled_src
 
 echo "Getting cfr decompliler"
 wget -nc -O "$TMP_DIR/$CFR_JAR" $CFR_URL 
 
+echo "Getting procyon decompliler"
+wget -nc -O "$TMP_DIR/$PROCYON_JAR" $PROCYON_URL 
+
 echo "Cleaning directory with decompiled source"
 rm -rf "$DECOMPILED_SRC_DIR"
 
-echo "Starting jar decompiling"
-find "$HYBRIS_DIR/../.." \( \
-		-regex ".*bin/[^/]*.jar" \
-		-not -path "*tomcat*" \
-		-not -path "*atddrunner*" \
-	-or \
-		-name "*_bof.jar" \) \
-	-exec java -jar $TMP_DIR/$CFR_JAR "{}" --outputdir "$DECOMPILED_SRC_DIR"/ \;
+rsync -zarvm --exclude="custom/**" \
+				--exclude="*tomcat*" \
+				--include="*/" \
+				--include="**/bin/*.jar" \
+				--exclude="*" \
+				"$HYBRIS_DIR/.." \
+				"$DECOMPILED_SRC_DIR";
+
+echo "Starting class files decompiling"
+find $DECOMPILED_SRC_DIR -name "*.jar" -exec bash -c 'decompileClass "$1"' _ {} \;
+
+echo "Starting cleaning up"
+find $DECOMPILED_SRC_DIR -name '*.jar' -exec rm "{}" \;
 
 echo "Finished, decompiled sources available in folder: $DECOMPILED_SRC_DIR"
+
