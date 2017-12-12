@@ -6,14 +6,17 @@
 #
 # source: https://github.com/sergaks/y-scripts
 
-CFR_JAR=cfr_0_122.jar
+CFR_JAR=cfr_0_123.jar
 CFR_URL="http://www.benf.org/other/cfr/$CFR_JAR"
 
 PROCYON_JAR="procyon-decompiler-0.5.30.jar"
 PROCYON_URL="https://bitbucket.org/mstrobel/procyon/downloads/$PROCYON_JAR"
 
 TMP_DIR="/tmp"
-HYBRIS_DIR=`y-whereis`
+HYBRIS_BIN_DIR=$(cd $(dirname `y-whereis`); pwd)
+DECOMPILED_SRC_DIR=$(cd $(dirname $HYBRIS_BIN_DIR/../..); pwd)/data/decompiled_src
+
+echo $DECOMPILED_SRC_DIR
 
 SELECTED_DECOMPILER="procyon"
 
@@ -24,13 +27,16 @@ function decompileJar {
 	local jarPath=$1
 	local decompiler=$2
 	local jarName=$(basename $jarPath)
-   	local jarBaseName="${jarName%.*}"
-   	local jarDirPath=$(dirname $jarPath)/$jarBaseName
+	local jarBaseName="${jarName%.*}"
+	local jarDirPath=$(dirname $jarPath)/$jarBaseName
 	if [ $decompiler = "cfr" ]; then
-	   java -jar $TMP_DIR/$CFR_JAR $jarPath --outputdir $jarDirPath;
+		java -jar $TMP_DIR/$CFR_JAR $jarPath --outputdir $jarDirPath;
 	else
-	   java -jar $TMP_DIR/$PROCYON_JAR -ln -jar $jarPath -o $jarDirPath;
+		java -jar $TMP_DIR/$PROCYON_JAR -sl -ln --unicode -jar $jarPath -o $jarDirPath;
 	fi
+	echo "Packing jar jar cvf $jarBaseName-sources.jar $jarDirPath"
+	#cd $(dirname $jarPath)
+	#jar cvf $jarBaseName-sources.jar $jarBaseName
 	return 0
 }
 export -f decompileJar
@@ -57,9 +63,6 @@ SELECTED_DECOMPILER=$OPTARG;;
 esac
 done
 
-RELATIVE_DECOMPILED_SRC_DIR="$HYBRIS_DIR/../../data/decompiled_src"
-DECOMPILED_SRC_DIR=$(cd $(dirname $RELATIVE_DECOMPILED_SRC_DIR); pwd)/decompiled_src
-
 echo "Getting cfr decompliler"
 wget -nc -O "$TMP_DIR/$CFR_JAR" $CFR_URL 
 
@@ -73,8 +76,9 @@ rsync -zarvm --exclude="custom/**" \
 				--exclude="*tomcat*" \
 				--include="*/" \
 				--include="**/bin/*.jar" \
+				--include="**/*_bof.jar" \
 				--exclude="*" \
-				"$HYBRIS_DIR/.." \
+				"$HYBRIS_BIN_DIR" \
 				"$DECOMPILED_SRC_DIR";
 
 echo "Starting class files decompiling by $SELECTED_DECOMPILER"
@@ -82,6 +86,6 @@ find $DECOMPILED_SRC_DIR -name "*.jar" -exec bash -c 'decompileJar "$1" "$2"' _ 
 
 
 echo "Starting cleaning up"
-find $DECOMPILED_SRC_DIR -name '*.jar' -exec rm "{}" \;
+find $DECOMPILED_SRC_DIR ! -name '*-sources.jar' -name '*.jar' -exec rm "{}" \;
 
 echo "Finished, decompiled sources available in folder: $DECOMPILED_SRC_DIR"
