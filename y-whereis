@@ -9,8 +9,8 @@ HYBRIS_PLATFORM_DIR="bin/platform"
 function purge_hybris_pathes()
 {
     for f in "${pathes[@]}"; do
-		if [ -d "$f/$HYBRIS_PLATFORM_DIR" ]; then
-			hybris_pathes+=("$f/$HYBRIS_PLATFORM_DIR")
+		if [[ $f == *$HYBRIS_PLATFORM_DIR ]]; then
+			hybris_pathes+=("$f")
 		fi
 	done
 }
@@ -18,8 +18,8 @@ function purge_hybris_pathes()
 function lookup_in_current_dir() 
 {
 	CURRENT_DIR=`pwd`
-	if [[ $CURRENT_DIR == *"hybris"* ]]; then
-	  pathes+=(`echo $CURRENT_DIR | sed -n 's/hybris.*$/hybris/p'`)
+	if [[ $CURRENT_DIR == *"platform"* ]]; then
+	  pathes+=(`echo $CURRENT_DIR | sed -n 's/platform.*$/platform/p'`)
 	fi
 }
 
@@ -27,16 +27,17 @@ function lookup_in_subdirectories()
 {
 	while IFS=  read -r -d $'\0'; do
     pathes+=("$REPLY")
-	done < <(find .  -maxdepth 3 -type d -name "hybris" -print0)
+	done < <(find .  -maxdepth 4 -type d -name "platform" -print0)
 }
 
 function lookup_nearby() 
 {
 	PARENT=".."
-	for (( i = 0; i < 5; i++ )); do
+	for (( i = 0; i < 4; i++ )); do
 		while IFS=  read -r -d $'\0'; do
 		pathes+=("$REPLY")
-		done < <(find $PARENT -maxdepth 3 -type d -name "hybris" -print0)
+		echo $REPLY + '+' + 'bin'
+		done < <(find $PARENT -maxdepth 4 -type d -name "platform" -print0)
 		PARENT+="/.."
 		purge_hybris_pathes
 		if [ ${#hybris_pathes[@]} -ne 0 ]; then
