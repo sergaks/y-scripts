@@ -8,6 +8,13 @@ CONSOLE_OUTPUT_FILE="/tmp/hybris-init.log"
 
 y-ant all initialize "$@" | tee "$CONSOLE_OUTPUT_FILE"
 
+# check if initialize was actually run
+if ( ! grep -q "Initialize system" $CONSOLE_OUTPUT_FILE ); then
+	echo "======================================"
+    echo "FAILED (Initialize system was not actually performed, see ant console output for details)"
+    exit 1
+fi
+
 FAILURES=`cat "$CONSOLE_OUTPUT_FILE" | sed -n "/Initialize system/,/FINISHED/p" | grep -e "WARN\|ERROR"`
 
 ERRORS=`echo "$FAILURES" | grep "ERROR"`

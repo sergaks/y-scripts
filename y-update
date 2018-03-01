@@ -8,6 +8,13 @@ CONSOLE_OUTPUT_FILE="/tmp/hybris-update.log"
 
 y-ant all updatesystem "$@" | tee "$CONSOLE_OUTPUT_FILE"
 
+# check if update was actually run
+if ( ! grep -q "Updating system" $CONSOLE_OUTPUT_FILE ); then
+	echo "======================================"
+    echo "FAILED (Updating system was not actually performed, see ant console output for details)"
+    exit 1
+fi
+
 FAILURES=`cat "$CONSOLE_OUTPUT_FILE" | sed -n "/Updating system/,/FINISHED/p" | grep -e "WARN\|ERROR"`
 
 ERRORS=`echo "$FAILURES" | grep "ERROR"`
