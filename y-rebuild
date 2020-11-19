@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+# Alias for and build with disabled items.xml verification to speed up rebuilding
+#
+# source: https://github.com/sergaks/y-scripts
+
+y-ant clean && y-build && y-ant deploy
+
